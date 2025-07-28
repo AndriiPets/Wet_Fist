@@ -1,0 +1,163 @@
+[gd_scene load_steps=16 format=3 uid="uid://dh25lcm37wygr"]
+
+[ext_resource type="Texture2D" uid="uid://nesfdjfk5700" path="res://assets/art/characters/shadow.png" id="1_2qjml"]
+[ext_resource type="Script" uid="uid://cthftuy0jeqky" path="res://scripts/characters/player.gd" id="1_ma1fs"]
+[ext_resource type="Texture2D" uid="uid://ctpfbe7gk2x73" path="res://assets/art/characters/player.png" id="2_ma1fs"]
+[ext_resource type="PackedScene" uid="uid://1lq3uio7dv0v" path="res://scenes/components/health_component.tscn" id="3_yscb1"]
+[ext_resource type="PackedScene" uid="uid://dirgyq7nkenj3" path="res://scenes/components/hurtbox_component.tscn" id="4_ysl2u"]
+[ext_resource type="PackedScene" uid="uid://bpu5tr3kve3nt" path="res://scenes/components/hitbox_component.tscn" id="6_yscb1"]
+[ext_resource type="Resource" uid="uid://cbd308ttptrxd" path="res://resources/attacks/punch_attack.tres" id="7_ysl2u"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_oqd6d"]
+radius = 2.0
+height = 12.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yscb1"]
+size = Vector2(16, 25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ysl2u"]
+size = Vector2(10, 6)
+
+[sub_resource type="Animation" id="Animation_yscb1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_ma1fs"]
+resource_name = "idle"
+length = 0.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.102317, 0.204635, 0.303804),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="Animation" id="Animation_oqd6d"]
+resource_name = "punch"
+length = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0507596, 0.1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [21, 22, 23]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.15),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"toggle_hitbox"
+}, {
+"args": [],
+"method": &"on_action_complete"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_ysl2u"]
+resource_name = "walk"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0991691, 0.201486, 0.30223, 0.401399, 0.502142, 0.601311, 0.698906),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [10, 11, 12, 13, 14, 15, 16, 17]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_oqd6d"]
+_data = {
+&"RESET": SubResource("Animation_yscb1"),
+&"idle": SubResource("Animation_ma1fs"),
+&"punch": SubResource("Animation_oqd6d"),
+&"walk": SubResource("Animation_ysl2u")
+}
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 9
+script = ExtResource("1_ma1fs")
+
+[node name="ShadowSprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_2qjml")
+centered = false
+offset = Vector2(-7, 0)
+
+[node name="CharacterSprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture = ExtResource("2_ma1fs")
+centered = false
+offset = Vector2(-24, -48)
+hframes = 10
+vframes = 10
+
+[node name="CollisionBox" type="CollisionShape2D" parent="."]
+position = Vector2(0, -1)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_oqd6d")
+
+[node name="HealthComponent" parent="." instance=ExtResource("3_yscb1")]
+
+[node name="HurtboxComponent" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("4_ysl2u")]
+position = Vector2(0, -1)
+collision_layer = 16
+collision_mask = 256
+health_component = NodePath("../HealthComponent")
+
+[node name="Collision" parent="HurtboxComponent" index="0"]
+position = Vector2(0, -11.5)
+shape = SubResource("RectangleShape2D_yscb1")
+
+[node name="HitboxComponent" parent="." instance=ExtResource("6_yscb1")]
+position = Vector2(0, -13)
+collision_layer = 128
+data = ExtResource("7_ysl2u")
+
+[node name="Collision" parent="HitboxComponent" index="0"]
+position = Vector2(12, 0)
+shape = SubResource("RectangleShape2D_ysl2u")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {
+&"": SubResource("AnimationLibrary_oqd6d")
+}
+autoplay = "idle"
+
+[editable path="HurtboxComponent"]
+[editable path="HitboxComponent"]

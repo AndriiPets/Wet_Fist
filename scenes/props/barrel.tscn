@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://bsuprhx5ci4tg"]
+
+[ext_resource type="Texture2D" uid="uid://bjih1g2psc12m" path="res://assets/art/props/barrel.png" id="1_i1o76"]
+[ext_resource type="Script" uid="uid://ch6gihwr84of5" path="res://scripts/props/barrel.gd" id="1_ikkq8"]
+[ext_resource type="PackedScene" uid="uid://1lq3uio7dv0v" path="res://scenes/components/health_component.tscn" id="2_nhfpi"]
+[ext_resource type="PackedScene" uid="uid://dirgyq7nkenj3" path="res://scenes/components/hurtbox_component.tscn" id="3_ikkq8"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_mvosc"]
+radius = 2.0
+height = 12.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nhfpi"]
+size = Vector2(14, 19)
+
+[node name="Barrel" type="StaticBody2D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_ikkq8")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_i1o76")
+centered = false
+offset = Vector2(-16, -32)
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_mvosc")
+
+[node name="HealthComponent" parent="." instance=ExtResource("2_nhfpi")]
+max_health = 3
+
+[node name="HurtboxComponent" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("3_ikkq8")]
+collision_layer = 64
+collision_mask = 384
+health_component = NodePath("../HealthComponent")
+
+[node name="Collision" parent="HurtboxComponent" index="0"]
+position = Vector2(0, -11.5)
+shape = SubResource("RectangleShape2D_nhfpi")
+
+[editable path="HurtboxComponent"]
