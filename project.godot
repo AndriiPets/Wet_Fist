@@ -17,7 +17,8 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-CombatGlobals="*res://scripts/globals/combat_globals.gd"
+Globals="*res://scripts/globals/globals.gd"
+Events="*res://scripts/globals/events.gd"
 
 [display]
 

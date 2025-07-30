@@ -12,8 +12,6 @@ enum State {
 var velocity = Vector2.ZERO
 var _state := State.IDLE
 
-const GRAVITY: float = 600.0
-
 var height: float = 0.0
 var height_speed: float = 0.0
 
@@ -44,7 +42,7 @@ func handle_airtime(delta: float) -> void:
 			height = 0
 			queue_free()
 		else:
-			height_speed -= GRAVITY * delta
+			height_speed -= Globals.GRAVITY * delta
 
 func _on_death() -> void:
 	_state = State.DESTROYED
