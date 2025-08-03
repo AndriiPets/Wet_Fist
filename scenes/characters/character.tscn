@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dh25lcm37wygr"]
+[gd_scene load_steps=28 format=3 uid="uid://dh25lcm37wygr"]
 
 [ext_resource type="Texture2D" uid="uid://nesfdjfk5700" path="res://assets/art/characters/shadow.png" id="1_2qjml"]
 [ext_resource type="Script" uid="uid://cthftuy0jeqky" path="res://scripts/characters/player.gd" id="1_ma1fs"]
@@ -7,6 +7,14 @@
 [ext_resource type="PackedScene" uid="uid://dirgyq7nkenj3" path="res://scenes/components/hurtbox_component.tscn" id="4_ysl2u"]
 [ext_resource type="PackedScene" uid="uid://bpu5tr3kve3nt" path="res://scenes/components/hitbox_component.tscn" id="6_yscb1"]
 [ext_resource type="Resource" uid="uid://cbd308ttptrxd" path="res://resources/attacks/punch_attack.tres" id="7_ysl2u"]
+[ext_resource type="Script" uid="uid://cwxhumyvlv8q8" path="res://scripts/components/state_machine.gd" id="8_8gmw8"]
+[ext_resource type="Script" uid="uid://chablihmnm6pw" path="res://scripts/states/player/idle.gd" id="9_3mlnx"]
+[ext_resource type="Script" uid="uid://bdqpq3tsbc5mi" path="res://scripts/states/player/walk.gd" id="10_tx3ek"]
+[ext_resource type="Script" uid="uid://j7sithnvtn83" path="res://scripts/states/player/attack.gd" id="11_3mlnx"]
+[ext_resource type="Script" uid="uid://f6saul2a1von" path="res://scripts/states/player/takeoff.gd" id="12_ohwx5"]
+[ext_resource type="Script" uid="uid://bwijr3rop07b4" path="res://scripts/states/player/land.gd" id="13_437sl"]
+[ext_resource type="Script" uid="uid://cj4148p5ltxjb" path="res://scripts/states/player/jump.gd" id="14_1j4ge"]
+[ext_resource type="Script" uid="uid://c37d5rqyxxv8c" path="res://scripts/states/player/jumpkick.gd" id="15_hm0uo"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_oqd6d"]
 radius = 2.0
@@ -48,6 +56,80 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 1,
 "values": [0, 1, 2, 3]
+}
+
+[sub_resource type="Animation" id="Animation_8gmw8"]
+resource_name = "jump"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [62]
+}
+
+[sub_resource type="Animation" id="Animation_tx3ek"]
+resource_name = "jumpkick"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [63]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"values": []
+}
+
+[sub_resource type="Animation" id="Animation_3mlnx"]
+resource_name = "land"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CharacterSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [61]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.05),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_land_complete"
+}]
 }
 
 [sub_resource type="Animation" id="Animation_oqd6d"]
@@ -97,23 +179,6 @@ tracks/2/keys = {
 }]
 }
 
-[sub_resource type="Animation" id="Animation_ysl2u"]
-resource_name = "walk"
-length = 0.8
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CharacterSprite:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.0991691, 0.201486, 0.30223, 0.401399, 0.502142, 0.601311, 0.698906),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
-"update": 1,
-"values": [10, 11, 12, 13, 14, 15, 16, 17]
-}
-
 [sub_resource type="Animation" id="Animation_03c51"]
 resource_name = "takeoff"
 length = 0.05
@@ -144,9 +209,9 @@ tracks/1/keys = {
 }]
 }
 
-[sub_resource type="Animation" id="Animation_8gmw8"]
-resource_name = "jump"
-length = 0.1
+[sub_resource type="Animation" id="Animation_ysl2u"]
+resource_name = "walk"
+length = 0.8
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -155,67 +220,10 @@ tracks/0/path = NodePath("CharacterSprite:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
+"times": PackedFloat32Array(0, 0.0991691, 0.201486, 0.30223, 0.401399, 0.502142, 0.601311, 0.698906),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [62]
-}
-
-[sub_resource type="Animation" id="Animation_3mlnx"]
-resource_name = "land"
-length = 0.05
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CharacterSprite:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [61]
-}
-tracks/1/type = "method"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath(".")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0.05),
-"transitions": PackedFloat32Array(1),
-"values": [{
-"args": [],
-"method": &"on_land_complete"
-}]
-}
-
-[sub_resource type="Animation" id="Animation_tx3ek"]
-resource_name = "jumpkick"
-length = 0.1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CharacterSprite:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [63]
-}
-tracks/1/type = "method"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath(".")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(),
-"transitions": PackedFloat32Array(),
-"values": []
+"values": [10, 11, 12, 13, 14, 15, 16, 17]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_oqd6d"]
@@ -282,6 +290,34 @@ libraries = {
 &"": SubResource("AnimationLibrary_oqd6d")
 }
 autoplay = "idle"
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("actor", "animation_player")]
+unique_name_in_owner = true
+script = ExtResource("8_8gmw8")
+initial_state = NodePath("Idle")
+actor = NodePath("..")
+animation_player = NodePath("../AnimationPlayer")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("9_3mlnx")
+
+[node name="Walk" type="Node" parent="StateMachine"]
+script = ExtResource("10_tx3ek")
+
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("11_3mlnx")
+
+[node name="Takeoff" type="Node" parent="StateMachine"]
+script = ExtResource("12_ohwx5")
+
+[node name="Land" type="Node" parent="StateMachine"]
+script = ExtResource("13_437sl")
+
+[node name="Jump" type="Node" parent="StateMachine"]
+script = ExtResource("14_1j4ge")
+
+[node name="Jumpkick" type="Node" parent="StateMachine"]
+script = ExtResource("15_hm0uo")
 
 [editable path="HurtboxComponent"]
 [editable path="HitboxComponent"]

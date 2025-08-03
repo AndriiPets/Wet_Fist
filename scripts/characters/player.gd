@@ -1,120 +1,82 @@
-extends CharacterBody2D
+class_name Player
+extends Actor
 
-@export var speed: float = 50.0
 @export var jump_intensity: float = 150.0
 
-@onready var animation: AnimationPlayer = %AnimationPlayer
+@onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var sprite: Sprite2D = %CharacterSprite
-
-@onready var hitbox := %HitboxComponent as HitboxComponent
-@onready var hurtbox := %HurtboxComponent as HurtboxComponent
-
-enum PlayerState {
-	IDLE,
-	WALK,
-	ATTACK,
-	TAKEOFF,
-	JUMP,
-	LAND,
-	JUMPKICK
-}
+@onready var hitbox: HitboxComponent = %HitboxComponent
+@onready var state_machine: StateMachine = %StateMachine
 
 var height: float = 0.0
 var height_speed: float = 0.0
-var _state := PlayerState.IDLE
 
-var anim_map := {
-	PlayerState.IDLE: "idle",
-	PlayerState.WALK: "walk",
-	PlayerState.ATTACK: "punch",
-	PlayerState.TAKEOFF: "takeoff",
-	PlayerState.JUMP: "jump",
-	PlayerState.LAND: "land",
-	PlayerState.JUMPKICK: "jumpkick",
-}
+var current_state: State
 
-func _process(_delta: float) -> void:
-	handle_input()
-	handle_movement()
-	handle_animatons()
-	handle_air_time(_delta)
-	flip_sprites()
-	sprite.position = Vector2.UP * height
-	hurtbox.position = Vector2.UP * height
+func _physics_process(delta: float) -> void:
+	# Delegate the physics process to the current state
+	state_machine._physics_process(delta)
+
+	# Handle vertical movement and gravity, which is global to all states
+	handle_air_time(delta)
+	
+	# Apply movement
 	move_and_slide()
 
-func handle_input() -> void:
-	var direction := Input.get_vector("LEFT", "RIGHT", "UP", "DOWN")
-	velocity = direction * speed
-	if can_attack() && Input.is_action_just_pressed("ATTACK"):
-		_state = PlayerState.ATTACK
-	if can_jump() && Input.is_action_pressed("JUMP"):
-		_state = PlayerState.TAKEOFF
-	if can_jumpkick() && Input.is_action_just_pressed("ATTACK"):
-		_state = PlayerState.JUMPKICK
-		hitbox.enable()
-
-func handle_movement() -> void:
-	if can_move():
-		if velocity.is_zero_approx():
-			_state = PlayerState.IDLE
-		else:
-			_state = PlayerState.WALK
-	
-func flip_sprites() -> void:
-	if velocity.x > 0:
-		sprite.flip_h = false
-		hitbox.scale.x = 1.0
-
-		hitbox.data.direction = Vector2.RIGHT
-	elif velocity.x < 0:
-		sprite.flip_h = true
-		hitbox.scale.x = -1.0
-
-		hitbox.data.direction = Vector2.LEFT
-
-func handle_animatons() -> void:
-	if not animation.has_animation(anim_map[_state]):
-		push_error("Player dosent have animation:", anim_map[_state])
-	animation.play(anim_map[_state])
+func _unhandled_input(event: InputEvent) -> void:
+	# Delegate input handling to the current state
+	state_machine._unhandled_input(event)
 
 func handle_air_time(delta: float) -> void:
-	if _state != PlayerState.JUMP && _state != PlayerState.JUMPKICK:
-		return
-	
-	height += height_speed * delta
+	# This logic is handled here because it's shared across multiple states (Jump, JumpKick, etc.)
+	if height > 0 or height_speed != 0:
+		height += height_speed * delta
+		height_speed -= Globals.GRAVITY * delta
 
 	if height < 0:
 		height = 0
-		_state = PlayerState.LAND
-	else:
-		height_speed -= Globals.GRAVITY * delta
+		height_speed = 0
+		# The Land state will handle the transition back to Idle
+		if state_machine.get_current().is_in_group("air_state"):
+			state_machine.change_state("Land")
 
-func can_attack() -> bool:
-	return _state == PlayerState.IDLE || _state == PlayerState.WALK
+	# Update sprite and hitbox positions based on height
+	sprite.position.y = - height
+	hitbox.position.y = -13 - height
 
-func can_jump() -> bool:
-	return _state == PlayerState.IDLE || _state == PlayerState.WALK
-
-func can_move() -> bool:
-	return _state == PlayerState.WALK || _state == PlayerState.IDLE
-
-func can_jumpkick() -> bool:
-	return _state == PlayerState.JUMP
-
+# Called from animation to signal the end of an attack
 func on_action_complete() -> void:
-	_state = PlayerState.IDLE
+	state_machine.change_state("Idle")
 
+func flip_sprites(direction: float) -> void:
+	if direction > 0:
+		sprite.flip_h = false
+		hitbox.scale.x = 1.0
+		hitbox.data.direction = Vector2.RIGHT
+	elif direction < 0:
+		sprite.flip_h = true
+		hitbox.scale.x = -1.0
+		hitbox.data.direction = Vector2.LEFT
+
+# Called from animation at the start and end of attacks
 func toggle_hitbox() -> void:
 	if hitbox.is_enabled:
 		hitbox.disable()
 	else:
 		hitbox.enable()
 
+# Called from the Takeoff animation
 func on_takeoff_complete() -> void:
-	_state = PlayerState.JUMP
+	state_machine.change_state("Jump")
 	height_speed = jump_intensity
 
+# Called from the Land animation
 func on_land_complete() -> void:
-	_state = PlayerState.IDLE
+	state_machine.change_state("Idle")
 	hitbox.disable()
+
+func _process(_delta: float) -> void:
+	var state = state_machine.get_current()
+	if state != current_state:
+		print(state.name)
+		current_state = state
